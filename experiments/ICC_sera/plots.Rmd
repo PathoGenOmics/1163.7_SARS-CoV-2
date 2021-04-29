@@ -1,0 +1,175 @@
+```{r}
+library(ggplot2)
+library(scales)
+library(ggforce)
+
+```
+
+
+```{r}
+res.ic50 <- read.csv(file = 'IC80_min_1e5_recip.csv', header = TRUE)
+
+
+### for all the data
+res.ic50_2=res.ic50[res.ic50$virus!="S2-G614",]
+res.ic50_2$virus <- factor(res.ic50_2$virus, levels = c("A222V_D614G", "A222V_D614G_D1163Y_G1167V"))
+
+a1<-ggplot(res.ic50_2,aes(x=virus,y=ic, colour=virus))+ geom_point(size=1.5)+ geom_errorbar(aes(ymin=ic-error.ic,ymax=ic+error.ic),width=.2,position=position_dodge(.9))+
+  facet_grid(.~sera)+theme_bw()+
+    xlab("")+ theme(legend.position = "none")+ scale_color_manual(values=c("#40916c","#b00286","#b00286"))+ theme(axis.text.x = element_text(angle = 70, vjust = 0.7, hjust=0.7,size=8))+theme(axis.text.y = element_text(size = 10),
+  axis.title.y = element_text(size = 12))+ylab(expression(Reciprocal~ID[80]~Titer~(Log[10])))
+a1
+```
+
+```{r}
+res.ic50 <- read.csv(file = 'IC80_min_1e5_recip2.csv', header = TRUE)
+
+
+### for all the data
+res.ic50_2=res.ic50[res.ic50$virus!="S2-G614",]
+res.ic50_2$virus <- factor(res.ic50_2$virus, levels = c("A222V_D614G", "A222V_D614G_D1163Y_G1167V"))
+res.ic50_2$sera <- factor(res.ic50_2$sera, levels = c("Serum 7","Serum 8","Serum 9","Serum 10"))
+
+a2<-ggplot(res.ic50_2,aes(x=virus,y=ic, colour=virus))+ geom_point(size=1.5)+ geom_errorbar(aes(ymin=ic-error.ic,ymax=ic+error.ic),width=.2,position=position_dodge(.9))+
+  facet_grid(.~sera)+theme_bw()+
+    xlab("")+ theme(legend.position = "none")+ scale_color_manual(values=c("#40916c","#b00286","#b00286"))+ theme(axis.text.x = element_text(angle = 70, vjust = 0.7, hjust=0.7,size=8))+theme(axis.text.y = element_text(size = 10),
+  axis.title.y = element_text(size = 12))+ylab(expression(Reciprocal~ID[80]~Titer~(Log[10])))
+a2
+```
+
+
+```{r}
+res.ic50 <- read.csv(file = 'vacunaIC80_min_1e5_recip.csv', header = TRUE)
+
+
+### for all the data
+res.ic50_2=res.ic50[res.ic50$virus!="S2-G614",]
+res.ic50_2$virus <- factor(res.ic50_2$virus, levels = c("A222V_D614G", "A222V_D614G_D1163Y_G1167V"))
+res.ic50_2$sera <- factor(res.ic50_2$sera, levels = c("Serum 11","Serum 12","Serum 13","Serum 14"))
+
+a3<-ggplot(res.ic50_2,aes(x=virus,y=ic, colour=virus))+ geom_point(size=1.5)+ geom_errorbar(aes(ymin=ic-error.ic,ymax=ic+error.ic),width=.2,position=position_dodge(.9))+
+  facet_grid(.~sera)+theme_bw()+
+    xlab("")+ theme(legend.position = "none")+ scale_color_manual(values=c("#40916c","#b00286","#b00286"))+ theme(axis.text.x = element_text(angle = 70, vjust = 0.7, hjust=0.7,size=8))+theme(axis.text.y = element_text(size = 10),
+  axis.title.y = element_text(size = 12))+ylab(expression(Reciprocal~ID[80]~Titer~(Log[10])))
+a3
+```
+
+
+```{r}
+res.ic50 <- read.csv(file = 'summ_results_min_1e5_recip.csv', header = TRUE)
+
+
+### for all the data
+res.ic50_2=res.ic50[res.ic50$virus!="S2-G614",]
+res.ic50_2$virus <- factor(res.ic50_2$virus, levels = c("20E: A222V_D614G", "20E: A222V_D614G_D1163Y_G1167V"))
+
+a2<-ggplot(res.ic50_2,aes(x=virus,y=ic50, colour=virus))+ geom_point(size=1.5)+ geom_errorbar(aes(ymin=ic50-error.ic50,ymax=ic50+error.ic50),width=.2,position=position_dodge(.9))+
+  facet_grid(.~sera)+theme_bw()+
+    xlab("")+ theme(legend.position = "none")+ scale_color_manual(values=c("#40916c","#b00286","#b00286"))+ theme(axis.text.x = element_text(angle = 70, vjust = 0.7, hjust=0.7,size=8))+theme(axis.text.y = element_text(size = 10),
+  axis.title.y = element_text(size = 12))+ylab(expression(Reciprocal~ID[50]~Titer~(Log[10])))
+a2
+```
+
+
+```{r}
+res.ic80 <- read.csv(file = 'summ_results_min_1e5_recip_80.csv', header = TRUE)
+
+```
+
+```{r}
+res.ic80=res.ic80[res.ic80$virus!="S2-G614",]
+res.ic80$virus <- factor(res.ic80$virus, levels = c("20E: A222V_D614G", "20E: A222V_D614G_D1163Y_G1167V"))
+a<-ggplot(res.ic80,aes(x=virus,y=ic80, colour=virus))+ geom_point(size=1.5)+ geom_errorbar(aes(ymin=ic80-error.ic80,ymax=ic80+error.ic80),width=.2,position=position_dodge(.9))+
+  facet_grid(.~sera)+theme_bw()+
+    xlab("")+ theme(legend.position = "none")+ scale_color_manual(values=c("#40916c","#b00286","#b00286"))+ theme(axis.text.x = element_text(angle = 70, vjust = 0.7, hjust=0.7,size=8))+theme(axis.text.y = element_text(size = 10),
+  axis.title.y = element_text(size = 12))+ylab(expression(Reciprocal~ID[80]~Titer~(Log[10])))
+a
+```
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+My_Theme = theme(
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.title.y = element_text(size = 16))
+theme(axis.text.x = element_text(size = 14))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+res.ic50_2=res.ic50[res.ic50$virus!="S2-G614",]
+  ggplot(res.ic50,aes(x=virus,y=ic50))+ geom_point()+
+  geom_errorbar(aes(ymin=ic50-error.ic50,ymax=ic50+error.ic50),width=.2,
+                position=position_dodge(.9))+
+  facet_grid(.~sera)+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0.5))+
+    ylab("NtAb50 titer")
+
+```
+```{r}
+df=cc50
+## get rid of negative values from wells that have less flu. than background
+df$relative_gfp[df$relative_gfp<0]=1e-5
+
+## get SEM and Mean
+df.p=df %>% group_by(sample, concentration,virus) %>% 
+summarize(avg=mean(relative_gfp),sem=sd(relative_gfp)/3^0.5)
+df.p$sample=as.factor(df.p$sample)
+# rm single mutant
+df.p=df.p[df.p$virus!="S2-G614",]
+
+b<-ggplot(df.p,aes(x=concentration,y=avg,group=virus,color=virus))+theme_bw()+
+   scale_y_log10(limits=c(1e-4,2))+
+   scale_x_log10()+
+   geom_line() +
+   geom_point()+
+   geom_errorbar(aes(ymin=avg-sem, ymax=avg+sem), width=.01)+
+   geom_hline(yintercept=0.5, linetype="dashed", color = "red")+
+   xlab("Antibody dilution")+ylab("Relative Fluorescence (% of untreated)")+
+   facet_wrap(~ sample,ncol = 2, nrow = 3)+scale_x_continuous(trans = trans_reverser('log10'))
+
+```
+
