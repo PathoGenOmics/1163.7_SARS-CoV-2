@@ -1,0 +1,60 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.align="center")
+knitr::opts_chunk$set(message = FALSE)
+library(ggpubr)
+library(dplyr)
+library(beeswarm)
+library(ggplot2)
+library(sf)
+library(raster)
+library(dplyr)
+library(spData)
+#install.packages("spDataLarge", repos = "https://nowosad.github.io/drat/", type = "source")
+library(spDataLarge)
+library(tmap)
+```
+
+
+```{r}
+mut <- read.table (file = "data2_.txt", header = TRUE, sep = "\t", as.is = TRUE, comment.char = "", quote = "\"", fill = TRUE)
+gen3 <- na.omit(data.frame(mut$Mutations, mut$N))
+colnames(gen3)<-c("mut","N")
+gen3$mut <- factor(gen3$mut, levels = c("No_D614G", "D614G","20E: A222V_D614G", "20E: A222V_D614G_D1163Y_G1167V", "20E: A222V_D614G_D1163Y", "D614G_G1167V"))
+
+
+#gen3=gen3[gen3$mut!="No_D614G",]
+gen3=gen3[gen3$mut!="D614G_G1167V",]
+gen3=gen3[gen3$mut!="20E: A222V_D614G_D1163Y",]
+
+
+compare_means(N ~ mut, data = gen3,method = "wilcox.test")
+mycomp1<-list(c("No_D614G","D614G"))
+mycomp2<-list(c("20E: A222V_D614G","D614G"))
+mycomp3<-list(c("20E: A222V_D614G_D1163Y_G1167V","D614G"))
+mycomp5<-list(c("20E: A222V_D614G","20E: A222V_D614G_D1163Y_G1167V"))
+
+p_gene3<-ggplot(gen3, aes(x=mut, y=N,alpha = 0,color=mut,fill=mut))  + 
+  geom_violin()+ geom_boxplot(width=0.1)+ scale_color_manual(values=c("#f9c22e","#e76f51","#40916c","#b00286","#53b3cb","#53b3cb"))+ scale_fill_manual(values=c("#f9c22e","#e76f51","#40916c","#b00286","#53b3cb","#53b3cb"))+theme_minimal()+ labs(title="",x="",y="ct values")+ theme(legend.position = "none")+ ylim(5, 52)+
+   stat_compare_means(comparisons = mycomp2,method = "wilcox.test",label.y = 45)+
+   stat_compare_means(comparisons = mycomp3,method = "wilcox.test",label.y = 49)+
+   stat_compare_means(comparisons = mycomp5,method = "wilcox.test",label.y = 42)+
+   stat_compare_means(comparisons = mycomp1,method = "wilcox.test",label.y = 47)+ theme(axis.text.x = element_text(angle = 25, vjust = 0.7, hjust=0.7,size=8))
+
+p_gene3
+```
+```{r}
+group_by(gen3, mut) %>%
+        summarise(
+                median = median(N, na.rm = TRUE),
+                IQR = IQR(N, na.rm = TRUE),
+                mean= mean(N, na.rm = TRUE),
+                c=n()
+        )
+
+```
+
+```{r}
+wilcox.test(N ~ mut, data = gen3, 
+        exact = FALSE, alternative = "less")
+```
+
