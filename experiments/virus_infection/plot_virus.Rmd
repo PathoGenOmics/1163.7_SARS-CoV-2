@@ -1,0 +1,240 @@
+```{r,echo=FALSE,warning=FALSE}
+library(ggplot2)
+library(scales)
+library(ggforce)
+library(dplyr)
+library(Rmisc) 
+library(ggpubr)
+```
+
+## Transformacion de los datos a log10 y calculo del error estandard
+```{r}
+data <- read.table(file = 'data.txt', header = TRUE, sep="\t")
+process_data <-group_by(data, Type, Analysis) %>%
+        dplyr::summarise(
+                count = n(),
+                ml_log= log10(ml)
+        )
+tgc <- Rmisc::summarySE(process_data, measurevar="ml_log", groupvars=c("Type","Analysis"))
+
+
+
+process_data_plot <-group_by(data, Type, Analysis) %>%
+        dplyr::summarise(
+                count = n(),
+                ml= ml
+        )
+tgc_plot <- Rmisc::summarySE(process_data_plot, measurevar="ml", groupvars=c("Type","Analysis"))
+```
+
+
+## Barplot
+```{r}
+vero<-tgc_plot[tgc_plot$Analysis=="Vero Cells",]
+vero$Type <- factor(vero$Type, levels = c("Wuhan", "D614G","20E: A222V_D614G", "20E: A222V_D614G_D1163Y_G1167V"))
+
+barplot_vero<-ggplot(vero)+theme_minimal()+geom_bar(stat="identity",aes(x=Type,y=ml,fill=Type,color=Type,alpha=.5))+ scale_fill_manual(values=c("#e9c46a","#e76f51","#40916c","#b00286"))+ scale_color_manual(values=c("#73726d","#73726d","#73726d","#73726d"))+ theme(legend.position = "none")+
+   geom_errorbar(aes(x=Type,y=ml,fill=Type,color=Type,ymin=ml-sd, ymax=ml+sd), width=.5)+ scale_color_manual(values=c("#c29b3c","#d45637","#2f7052","#962a7c"))+ labs(title="Vero cells",x="",y="FFU/ml")+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.text.x = element_text(angle = 25, vjust = 0.7, hjust=0.7,size=8))+ scale_y_log10()
+barplot_vero
+```
+
+## Puntos
+
+```{r}
+vero<-tgc_plot[tgc_plot$Analysis=="Vero Cells",]
+vero$Type <- factor(vero$Type, levels = c("Wuhan", "D614G","20E: A222V_D614G", "20E: A222V_D614G_D1163Y_G1167V"))
+
+plot_vero<-ggplot(vero,aes(x=Type,y=ml,color=Type))+theme_minimal()+geom_point(size=2)+ scale_color_manual(values=c("#e9c46a","#e76f51","#40916c","#b00286"))+ theme(legend.position = "none")+
+   geom_errorbar(aes(x=Type,y=ml,color=Type,ymin=ml-sd, ymax=ml+sd), width=.25)+ labs(title="",x="",y="FFU/ml")+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.text.x = element_text(angle = 25, vjust = 0.7, hjust=0.7,size=8))+scale_y_continuous(labels = scales::scientific)
+plot_vero
+```
+
+
+```{r}
+A549<-tgc_plot[tgc_plot$Analysis=="A549 hACE2 TMPRSS2",]
+A549$Type <- factor(A549$Type, levels = c("Wuhan", "D614G","20E: A222V_D614G", "20E: A222V_D614G_D1163Y_G1167V"))
+
+plot_A549<-ggplot(A549,aes(x=Type,y=ml,color=Type))+theme_minimal()+geom_point(size=2)+  scale_color_manual(values=c("#e9c46a","#e76f51","#40916c","#b00286"))+ theme(legend.position = "none")+
+   geom_errorbar(aes(x=Type,y=ml,color=Type,ymin=ml-sd, ymax=ml+sd), width=.25)+ labs(title="",x="",y="FFU/ml")+theme(plot.title = element_text(hjust = 0.5))+ theme(axis.text.x = element_text(angle = 25, vjust = 0.7, hjust=0.7,size=8))+scale_y_continuous(labels = scales::scientific)
+plot_A549
+```
+
+
+```{r}
+figure <- ggarrange(plot_vero,plot_A549,
+                    labels = c("a","b"),
+                    ncol = 2, nrow = 1)
+figure
+```
+
+```{r}
+a<-ggarrange(figure,p_gene3, nrow=2)
+```
+
+## Estadistica
+
+```{r}
+funcion_ttest<-function(type1,type2,analysis){
+  data<-process_data[process_data$Analysis==analysis,] # selecciono el analisis
+  a<-data[data$Type == type1 | data$Type == type2,] # selecciono los 2 tipos
+  pvalue <-t.test(a$ml_log ~ a$Type,
+       alternative ="two.sided",
+       paired = FALSE, var.equal = T
+) # ttest para los dos tipos
+  return(pvalue)
+}
+
+A549p_value_W_614G<-funcion_ttest("Wuhan","D614G","A549 hACE2 TMPRSS2")
+A549p_value_W_20E<-funcion_ttest("Wuhan","20E: A222V_D614G","A549 hACE2 TMPRSS2")
+A549p_value_W_1163.7<-funcion_ttest("Wuhan","20E: A222V_D614G_D1163Y_G1167V","A549 hACE2 TMPRSS2")
+A549p_value_614G_20E<-funcion_ttest("D614G","20E: A222V_D614G","A549 hACE2 TMPRSS2")
+A549p_value_614G_1163.7<-funcion_ttest("D614G","20E: A222V_D614G_D1163Y_G1167V","A549 hACE2 TMPRSS2")
+A549p_value_20E_1163.7<-funcion_ttest("20E: A222V_D614G","20E: A222V_D614G_D1163Y_G1167V","A549 hACE2 TMPRSS2")
+
+ver0_value_W_614G<-funcion_ttest("Wuhan","D614G","Vero Cells")
+ver0_value_W_20E<-funcion_ttest("Wuhan","20E: A222V_D614G","Vero Cells")
+ver0_value_W_1163.7<-funcion_ttest("Wuhan","20E: A222V_D614G_D1163Y_G1167V","Vero Cells")
+ver0_value_614G_20E<-funcion_ttest("D614G","20E: A222V_D614G","Vero Cells")
+ver0_value_614G_1163.7<-funcion_ttest("D614G","20E: A222V_D614G_D1163Y_G1167V","Vero Cells")
+ver0_value_20E_1163.7<-funcion_ttest("20E: A222V_D614G","20E: A222V_D614G_D1163Y_G1167V","Vero Cells")
+```
+
+### Todas vs VOI1163.7
+
+```{r}
+a1<-A549p_value_20E_1163.7[["p.value"]]
+a2<-A549p_value_614G_1163.7[["p.value"]]
+a3<-A549p_value_W_1163.7[["p.value"]]
+p_A549<-c(a1,a2,a3)
+p<-p_A549
+p<-p_A549
+show("20E.voi  614.voi  w.voi")
+show(p_A549) #sin corregir
+p.adjust(p_A549, method = "fdr", n = length(p))
+p.adjust(p_A549, method = "bonferroni", n = length(p))
+```
+
+```{r}
+v1<-ver0_value_20E_1163.7[["p.value"]]
+v2<-ver0_value_614G_1163.7[["p.value"]]
+v3<-ver0_value_W_1163.7[["p.value"]]
+p_vero<-c(v1,v2,v3)
+p<-p_vero
+show("20E.voi  614.voi  w.voi")
+show(p_vero) #sin corregir
+stats::p.adjust(p_vero, method = "fdr", n = length(p))
+p.adjust(p_vero, method = "bonferroni", n = length(p))
+```
+
+### Todas vs Wuhan
+
+```{r}
+a1<-A549p_value_W_614G[["p.value"]]
+a2<-A549p_value_W_20E[["p.value"]]
+a3<-A549p_value_W_1163.7[["p.value"]]
+
+p_A549<-c(a1,a2,a3)
+p<-p_A549
+show("w.614  w.20E  w.voi")
+show(p_A549) #sin corregir
+p.adjust(p_A549, method = "fdr", n = length(p))
+p.adjust(p_A549, method = "bonferroni", n = length(p))
+```
+```{r}
+v1<-ver0_value_W_614G[["p.value"]]
+v2<-ver0_value_W_20E[["p.value"]]
+v3<-ver0_value_W_1163.7[["p.value"]]
+
+p_vero<-c(v1,v2,v3)
+p<-p_vero
+
+show("w.614  w.20E  w.voi")
+show(p_A549) #sin corregir
+p.adjust(p_vero, method = "fdr", n = length(p))
+p.adjust(p_vero, method = "bonferroni", n = length(p))
+```
+
+### Todas vs D614G
+```{r}
+a1<-A549p_value_W_614G[["p.value"]]
+a2<-A549p_value_614G_20E[["p.value"]]
+a3<-A549p_value_614G_1163.7[["p.value"]]
+
+p_A549<-c(a1,a2,a3)
+show("w.614  614.20E  614.voi")
+show(p_A549)
+p<-p_A549
+p.adjust(p_A549, method = "fdr", n = length(p))
+p.adjust(p_A549, method = "bonferroni", n = length(p))
+```
+
+```{r}
+v1<-ver0_value_W_614G[["p.value"]]
+v2<-ver0_value_614G_20E[["p.value"]]
+v3<-ver0_value_614G_1163.7[["p.value"]]
+
+p_vero<-c(v1,v2,v3)
+p<-p_vero
+
+show("w.614     614.20E     614.voi")
+show(p_A549)
+p.adjust(p_vero, method = "fdr", n = length(p))
+p.adjust(p_vero, method = "bonferroni", n = length(p))
+```
+
+
+### 614 vs Wuhan, 20E vs 614, VOI vs 20E
+```{r}
+a1<-A549p_value_W_614G[["p.value"]]
+a2<-A549p_value_614G_20E[["p.value"]]
+a3<-A549p_value_20E_1163.7[["p.value"]]
+
+p_A549<-c(a1,a2,a3)
+p<-p_A549
+show("614.w  20E.614  voi.20E")
+show(p_A549)
+p.adjust(p_A549, method = "fdr", n = length(p))
+p.adjust(p_A549, method = "bonferroni", n = length(p))
+```
+```{r}
+v1<-ver0_value_W_614G[["p.value"]]
+v2<-ver0_value_614G_20E[["p.value"]]
+v3<-ver0_value_20E_1163.7[["p.value"]]
+
+p_vero<-c(v1,v2,v3)
+show("614.w   20E.614  voi.20E")
+show(p_vero)
+p<-p_vero
+
+p.adjust(p_vero, method = "fdr", n = length(p))
+p.adjust(p_vero, method = "bonferroni", n = length(p))
+```
+
+### 614 vs Wuhan, 20E vs Wuhan, VOI vs 20E
+
+```{r}
+a1<-A549p_value_W_614G[["p.value"]]
+a2<-A549p_value_W_20E[["p.value"]]
+a3<-A549p_value_20E_1163.7[["p.value"]]
+
+p_A549<-c(a1,a2,a3)
+p<-p_A549
+
+show("614.w  20E.w  voi.20E")
+show(p_A549)
+p.adjust(p_A549, method = "fdr", n = length(p))
+p.adjust(p_A549, method = "bonferroni", n = length(p))
+```
+```{r}
+v1<-ver0_value_W_614G[["p.value"]]
+v2<-ver0_value_W_20E[["p.value"]]
+v3<-ver0_value_20E_1163.7[["p.value"]]
+
+p_vero<-c(v1,v2,v3)
+show("614.w   20E.w  voi.20E")
+show(p_vero)
+p<-p_vero
+
+p.adjust(p_vero, method = "fdr", n = length(p))
+p.adjust(p_vero, method = "bonferroni", n = length(p))
+```
